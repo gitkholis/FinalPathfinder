@@ -1,0 +1,414 @@
+<html>
+<head>
+<title>Routing.cpp</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #bbb529;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+.s3 { color: #cc7832;}
+.s4 { color: #6897bb;}
+.s5 { color: #808080;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+Routing.cpp</font>
+</center></td></tr></table>
+<pre><span class="s0">#define </span><span class="s1">_CRT_SECURE_NO_WARNINGS</span>
+<span class="s0">#define </span><span class="s1">_USE_MATH_DEFINES</span>
+<span class="s0">#include </span><span class="s2">&lt;bits/stdc++.h&gt;</span>
+<span class="s0">#include </span><span class="s2">&lt;random&gt;</span>
+<span class="s3">using namespace </span><span class="s1">std</span><span class="s3">;</span>
+
+<span class="s3">const int </span><span class="s1">INF = </span><span class="s4">999999999</span><span class="s3">;</span>
+
+<span class="s3">double </span><span class="s1">readInputData(vector&lt;vector&lt;pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt;&gt;&gt;&amp; graph</span><span class="s3">, </span>
+				   <span class="s1">vector&lt;tuple&lt;</span><span class="s3">int, int, int</span><span class="s1">&gt;&gt;&amp; banned_turns</span><span class="s3">, </span>
+				   <span class="s3">int</span><span class="s1">&amp; vertex_count</span><span class="s3">, int</span><span class="s1">&amp; arc_count</span><span class="s3">,</span>
+				   <span class="s1">vector&lt;pair&lt;</span><span class="s3">long double, long double</span><span class="s1">&gt;&gt;&amp; vertex_coordinates</span><span class="s3">,</span>
+				   <span class="s3">bool </span><span class="s1">data_with_coordinates) {</span>
+	<span class="s1">clock_t start_time = clock()</span><span class="s3">;</span>
+	<span class="s3">int </span><span class="s1">banned_turns_count</span><span class="s3">;</span>
+	<span class="s3">char </span><span class="s1">source_file[] = </span><span class="s2">&quot;nyc_data_meters.txt&quot;</span><span class="s3">;</span>
+	<span class="s1">ifstream fin</span><span class="s3">;</span>
+	<span class="s1">fin.open(source_file)</span><span class="s3">;</span>
+	<span class="s1">fin &gt;&gt; vertex_count &gt;&gt; arc_count</span><span class="s3">;</span>
+	<span class="s1">graph.resize(vertex_count + </span><span class="s4">1</span><span class="s1">)</span><span class="s3">;</span>
+	<span class="s3">for </span><span class="s1">(</span><span class="s3">int </span><span class="s1">i = </span><span class="s4">1</span><span class="s3">; </span><span class="s1">i &lt;= arc_count</span><span class="s3">; </span><span class="s1">++i) {</span>
+		<span class="s3">int </span><span class="s1">from_vertex</span><span class="s3">, </span><span class="s1">to_vertex</span><span class="s3">, </span><span class="s1">arc_weight</span><span class="s3">;</span>
+		<span class="s1">fin &gt;&gt; from_vertex &gt;&gt; to_vertex &gt;&gt; arc_weight</span><span class="s3">;</span>
+		<span class="s1">graph[from_vertex].push_back({ to_vertex</span><span class="s3">, </span><span class="s1">arc_weight })</span><span class="s3">;</span>
+	<span class="s1">}</span>
+	<span class="s1">fin &gt;&gt; banned_turns_count</span><span class="s3">;</span>
+	<span class="s3">for </span><span class="s1">(</span><span class="s3">int </span><span class="s1">i = </span><span class="s4">0</span><span class="s3">; </span><span class="s1">i &lt; banned_turns_count</span><span class="s3">; </span><span class="s1">++i) {</span>
+		<span class="s3">int </span><span class="s1">from_vertex</span><span class="s3">, </span><span class="s1">by_vertex</span><span class="s3">, </span><span class="s1">to_vertex</span><span class="s3">;</span>
+		<span class="s1">fin &gt;&gt; from_vertex &gt;&gt;by_vertex &gt;&gt; to_vertex</span><span class="s3">;</span>
+		<span class="s1">banned_turns.push_back({ from_vertex</span><span class="s3">, </span><span class="s1">by_vertex </span><span class="s3">, </span><span class="s1">to_vertex})</span><span class="s3">;</span>
+	<span class="s1">}</span>
+	<span class="s1">fin.close()</span><span class="s3">;</span>
+	<span class="s3">if </span><span class="s1">(data_with_coordinates) {</span>
+		<span class="s3">char </span><span class="s1">source_file_coord[] = </span><span class="s2">&quot;nyc_coordinates.txt&quot;</span><span class="s3">;</span>
+		<span class="s1">fin.open(source_file_coord)</span><span class="s3">;</span>
+		<span class="s1">fin &gt;&gt; vertex_count</span><span class="s3">;</span>
+		<span class="s1">vertex_coordinates.push_back({ </span><span class="s4">0 </span><span class="s3">, </span><span class="s4">0 </span><span class="s1">})</span><span class="s3">;</span>
+		<span class="s3">for </span><span class="s1">(</span><span class="s3">int </span><span class="s1">i = </span><span class="s4">1</span><span class="s3">; </span><span class="s1">i &lt;= vertex_count</span><span class="s3">; </span><span class="s1">++i) {</span>
+			<span class="s3">int </span><span class="s1">vertex_id</span><span class="s3">, </span><span class="s1">latitude</span><span class="s3">, </span><span class="s1">longitude</span><span class="s3">;</span>
+			<span class="s1">fin &gt;&gt; vertex_id &gt;&gt; latitude &gt;&gt; longitude</span><span class="s3">;</span>
+			<span class="s1">vertex_coordinates.push_back({ (</span><span class="s3">long double</span><span class="s1">)latitude/</span><span class="s4">1000000</span><span class="s3">, </span><span class="s1">(</span><span class="s3">long double</span><span class="s1">)longitude/</span><span class="s4">1000000 </span><span class="s1">})</span><span class="s3">;</span>
+		<span class="s1">}</span>
+		<span class="s1">fin.close()</span><span class="s3">;</span>
+	<span class="s1">}</span>
+	<span class="s1">clock_t end_time = clock()</span><span class="s3">;</span>
+	<span class="s3">return </span><span class="s1">(end_time - start_time)</span><span class="s3">;</span>
+<span class="s1">}</span>
+
+<span class="s1">pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt; findArcsWeight(vector&lt;vector&lt;pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt;&gt;&gt;&amp; source_graph</span><span class="s3">,</span>
+							  <span class="s3">int</span><span class="s1">&amp; from_vertex</span><span class="s3">, int</span><span class="s1">&amp; to_vertex</span><span class="s3">,</span>
+							  <span class="s1">vector&lt;tuple&lt;</span><span class="s3">int, int, int</span><span class="s1">&gt;&gt;&amp; temporary_arc_copies) {</span>
+	<span class="s3">for </span><span class="s1">(tuple&lt;</span><span class="s3">int, int, int</span><span class="s1">&gt; arc : temporary_arc_copies) {</span>
+		<span class="s3">if </span><span class="s1">(from_vertex == get&lt;</span><span class="s4">0</span><span class="s1">&gt;(arc) </span><span class="s3">and </span><span class="s1">to_vertex == get&lt;</span><span class="s4">1</span><span class="s1">&gt;(arc))</span>
+			<span class="s3">return </span><span class="s1">{ get&lt;</span><span class="s4">2</span><span class="s1">&gt;(arc)</span><span class="s3">, </span><span class="s4">1 </span><span class="s1">}</span><span class="s3">;</span>
+	<span class="s1">}</span>
+	<span class="s3">for </span><span class="s1">(</span><span class="s3">int </span><span class="s1">i = </span><span class="s4">0</span><span class="s3">; </span><span class="s1">i &lt; source_graph[from_vertex].size()</span><span class="s3">; </span><span class="s1">++i) {</span>
+		<span class="s3">if </span><span class="s1">(to_vertex == source_graph[from_vertex][i].first) {</span>
+			<span class="s3">int </span><span class="s1">cost = source_graph[from_vertex][i].second</span><span class="s3">;</span>
+			<span class="s1">temporary_arc_copies.push_back({ from_vertex</span><span class="s3">, </span><span class="s1">to_vertex</span><span class="s3">, </span><span class="s1">cost })</span><span class="s3">;</span>
+			<span class="s1">source_graph[from_vertex].erase(source_graph[from_vertex].begin() + i)</span><span class="s3">;</span>
+			<span class="s3">return </span><span class="s1">{ cost</span><span class="s3">, </span><span class="s4">0 </span><span class="s1">}</span><span class="s3">;</span>
+		<span class="s1">}</span>
+	<span class="s1">}</span>
+<span class="s1">}</span>
+
+<span class="s3">double </span><span class="s1">splitGraph(vector&lt;vector&lt;pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt;&gt;&gt;&amp; source_graph</span><span class="s3">, </span>
+				<span class="s1">vector&lt;vector&lt;pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt;&gt;&gt;&amp; splitted_graph</span><span class="s3">,</span>
+				<span class="s1">vector&lt;tuple&lt;</span><span class="s3">int, int, int</span><span class="s1">&gt;&gt;&amp; banned_turns) {</span>
+	<span class="s1">clock_t start_time = clock()</span><span class="s3">;</span>
+	<span class="s3">if </span><span class="s1">(banned_turns.size() != </span><span class="s4">0</span><span class="s1">) {</span>
+		<span class="s1">vector&lt;tuple&lt;</span><span class="s3">int, int, int</span><span class="s1">&gt;&gt; temporary_arc_copies</span><span class="s3">;</span>
+		<span class="s3">int </span><span class="s1">source_graph_size = source_graph.size()</span><span class="s3">;</span>
+		<span class="s1">splitted_graph.resize(</span><span class="s4">2 </span><span class="s1">* source_graph_size - </span><span class="s4">1</span><span class="s1">)</span><span class="s3">;</span>
+		<span class="s3">for </span><span class="s1">(</span><span class="s3">int </span><span class="s1">i = </span><span class="s4">0</span><span class="s3">; </span><span class="s1">i &lt; banned_turns.size()</span><span class="s3">; </span><span class="s1">++i) {</span>
+			<span class="s3">int </span><span class="s1">from_vertex = get&lt;</span><span class="s4">0</span><span class="s1">&gt;(banned_turns[i])</span><span class="s3">;</span>
+			<span class="s3">int </span><span class="s1">by_vertex = get&lt;</span><span class="s4">1</span><span class="s1">&gt;(banned_turns[i])</span><span class="s3">;</span>
+			<span class="s3">int </span><span class="s1">to_vertex = get&lt;</span><span class="s4">2</span><span class="s1">&gt;(banned_turns[i])</span><span class="s3">;</span>
+			<span class="s1">pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt; cost_and_bool</span><span class="s3">;</span>
+			<span class="s1">cost_and_bool = findArcsWeight(source_graph</span><span class="s3">, </span><span class="s1">from_vertex</span><span class="s3">, </span><span class="s1">by_vertex</span><span class="s3">, </span><span class="s1">temporary_arc_copies)</span><span class="s3">;</span>
+			<span class="s3">if </span><span class="s1">(!cost_and_bool.second)</span>
+				<span class="s1">splitted_graph[from_vertex].push_back({ by_vertex + source_graph_size - </span><span class="s4">1</span><span class="s3">, </span><span class="s1">cost_and_bool.first })</span><span class="s3">;</span>
+			<span class="s1">cost_and_bool = findArcsWeight(source_graph</span><span class="s3">, </span><span class="s1">by_vertex</span><span class="s3">, </span><span class="s1">to_vertex</span><span class="s3">, </span><span class="s1">temporary_arc_copies)</span><span class="s3">;</span>
+			<span class="s3">if </span><span class="s1">(!cost_and_bool.second)</span>
+				<span class="s1">splitted_graph[by_vertex].push_back({ to_vertex + source_graph_size - </span><span class="s4">1</span><span class="s3">, </span><span class="s1">cost_and_bool.first })</span><span class="s3">;</span>
+		<span class="s1">}</span>
+		<span class="s3">for </span><span class="s1">(</span><span class="s3">int </span><span class="s1">i = </span><span class="s4">1</span><span class="s3">; </span><span class="s1">i &lt; source_graph.size()</span><span class="s3">; </span><span class="s1">++i) {</span>
+			<span class="s3">for </span><span class="s1">(</span><span class="s3">int </span><span class="s1">j = </span><span class="s4">0</span><span class="s3">; </span><span class="s1">j &lt; source_graph[i].size()</span><span class="s3">; </span><span class="s1">++j) {</span>
+				<span class="s1">pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt; arc = source_graph[i][j]</span><span class="s3">;</span>
+				<span class="s1">splitted_graph[i].push_back({ arc.first</span><span class="s3">, </span><span class="s1">arc.second })</span><span class="s3">;</span>
+				<span class="s1">splitted_graph[i + source_graph_size - </span><span class="s4">1</span><span class="s1">].push_back({ arc.first</span><span class="s3">, </span><span class="s1">arc.second })</span><span class="s3">;</span>
+			<span class="s1">}</span>
+		<span class="s1">}</span>
+	<span class="s1">}</span>
+	<span class="s3">else </span><span class="s1">{</span>
+		<span class="s1">splitted_graph = source_graph</span><span class="s3">;</span>
+	<span class="s1">}</span>
+	<span class="s1">clock_t end_time = clock()</span><span class="s3">;</span>
+	<span class="s3">return </span><span class="s1">(end_time - start_time)</span><span class="s3">;</span>
+<span class="s1">}</span>
+
+<span class="s3">int </span><span class="s1">generateRandomNumber(</span><span class="s3">int </span><span class="s1">start_range</span><span class="s3">, int </span><span class="s1">end_range) {</span>
+	<span class="s1">random_device                  rand_dev</span><span class="s3">;</span>
+	<span class="s1">mt19937                        generator(rand_dev())</span><span class="s3">;</span>
+	<span class="s1">uniform_int_distribution&lt;</span><span class="s3">int</span><span class="s1">&gt;  distr(start_range</span><span class="s3">, </span><span class="s1">end_range)</span><span class="s3">;</span>
+	<span class="s3">return </span><span class="s1">distr(generator)</span><span class="s3">;</span>
+<span class="s1">}</span>
+
+<span class="s3">bool </span><span class="s1">findInBannedTurnsVector(vector&lt;tuple&lt;</span><span class="s3">int, int, int</span><span class="s1">&gt;&gt;&amp; banned_turns</span><span class="s3">,</span>
+							 <span class="s1">tuple&lt;</span><span class="s3">int, int, int</span><span class="s1">&gt;&amp; banned_turn) {</span>
+	<span class="s3">for </span><span class="s1">(tuple&lt;</span><span class="s3">int, int, int</span><span class="s1">&gt; temp : banned_turns) {</span>
+		<span class="s3">if </span><span class="s1">((get&lt;</span><span class="s4">0</span><span class="s1">&gt;(temp) == get&lt;</span><span class="s4">0</span><span class="s1">&gt;(banned_turn))</span>
+			<span class="s3">and </span><span class="s1">(get&lt;</span><span class="s4">1</span><span class="s1">&gt;(temp) == get&lt;</span><span class="s4">1</span><span class="s1">&gt;(banned_turn))</span>
+			<span class="s3">and </span><span class="s1">(get&lt;</span><span class="s4">2</span><span class="s1">&gt;(temp) == get&lt;</span><span class="s4">2</span><span class="s1">&gt;(banned_turn))) {</span>
+				<span class="s3">return true;</span>
+		<span class="s1">}</span>
+	<span class="s1">}</span>
+	<span class="s3">return false;</span>
+<span class="s1">}</span>
+
+<span class="s3">double </span><span class="s1">generateTurnRestrictions(vector&lt;vector&lt;pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt;&gt;&gt;&amp; graph</span><span class="s3">,</span>
+							  <span class="s1">vector&lt;tuple&lt;</span><span class="s3">int, int, int</span><span class="s1">&gt;&gt;&amp; banned_turns</span><span class="s3">,</span>
+							  <span class="s3">int</span><span class="s1">&amp; vertex_count</span><span class="s3">, int</span><span class="s1">&amp; arc_count) {</span>
+	<span class="s1">clock_t start_time = clock()</span><span class="s3">;</span>
+	<span class="s3">char </span><span class="s1">source_file[] = </span><span class="s2">&quot;nyc_data_random.txt&quot;</span><span class="s3">;</span>
+	<span class="s1">ofstream fin</span><span class="s3">;</span>
+	<span class="s1">fin.open(source_file</span><span class="s3">, </span><span class="s1">ios_base::app)</span><span class="s3">;</span>
+	<span class="s3">int </span><span class="s1">turn_restrictions_count = arc_count / </span><span class="s4">50</span><span class="s3">;</span>
+	<span class="s3">for </span><span class="s1">(</span><span class="s3">int </span><span class="s1">i = </span><span class="s4">1</span><span class="s3">; </span><span class="s1">i &lt;= turn_restrictions_count</span><span class="s3">; </span><span class="s1">++i) {</span>
+		<span class="s3">int </span><span class="s1">from_vertex</span><span class="s3">, </span><span class="s1">by_vertex</span><span class="s3">, </span><span class="s1">to_vertex</span><span class="s3">;</span>
+		<span class="s1">from_vertex = generateRandomNumber(</span><span class="s4">1</span><span class="s3">, </span><span class="s1">vertex_count)</span><span class="s3">;</span>
+		<span class="s3">if </span><span class="s1">(graph[from_vertex].size()) {</span>
+			<span class="s3">int </span><span class="s1">by_vertex_index = generateRandomNumber(</span><span class="s4">0</span><span class="s3">, </span><span class="s1">graph[from_vertex].size()-</span><span class="s4">1</span><span class="s1">)</span><span class="s3">;</span>
+			<span class="s1">by_vertex = graph[from_vertex][by_vertex_index].first</span><span class="s3">;</span>
+			<span class="s3">int </span><span class="s1">to_vertex_index = generateRandomNumber(</span><span class="s4">0</span><span class="s3">, </span><span class="s1">graph[by_vertex].size()-</span><span class="s4">1</span><span class="s1">)</span><span class="s3">;</span>
+			<span class="s1">to_vertex = graph[by_vertex][to_vertex_index].first</span><span class="s3">;</span>
+			<span class="s1">tuple&lt;</span><span class="s3">int, int, int</span><span class="s1">&gt; banned_turn = make_tuple(from_vertex</span><span class="s3">, </span><span class="s1">by_vertex</span><span class="s3">, </span><span class="s1">to_vertex)</span><span class="s3">;</span>
+			<span class="s3">if </span><span class="s1">(!findInBannedTurnsVector(banned_turns</span><span class="s3">, </span><span class="s1">banned_turn)) {</span>
+				<span class="s1">banned_turns.push_back(banned_turn)</span><span class="s3">;</span>
+			<span class="s1">}</span>
+		<span class="s1">}</span>
+	<span class="s1">}</span>
+	<span class="s1">fin &lt;&lt; banned_turns.size() &lt;&lt; endl</span><span class="s3">;</span>
+	<span class="s3">for </span><span class="s1">(tuple&lt;</span><span class="s3">int, int, int</span><span class="s1">&gt; banned_turn : banned_turns) {</span>
+		<span class="s1">fin &lt;&lt; get&lt;</span><span class="s4">0</span><span class="s1">&gt;(banned_turn) &lt;&lt; </span><span class="s2">&quot; &quot; </span><span class="s1">&lt;&lt; get&lt;</span><span class="s4">1</span><span class="s1">&gt;(banned_turn) &lt;&lt; </span><span class="s2">&quot; &quot; </span><span class="s1">&lt;&lt; get&lt;</span><span class="s4">2</span><span class="s1">&gt;(banned_turn) &lt;&lt; endl</span><span class="s3">;</span>
+	<span class="s1">}</span>
+	<span class="s1">fin.close()</span><span class="s3">;</span>
+	<span class="s1">clock_t end_time = clock()</span><span class="s3">;</span>
+	<span class="s3">return </span><span class="s1">(end_time - start_time)</span><span class="s3">;</span>
+<span class="s1">}</span>
+
+<span class="s3">void </span><span class="s1">printPath(vector&lt;</span><span class="s3">int</span><span class="s1">&gt;&amp; ancestors</span><span class="s3">, </span>
+			   <span class="s3">int</span><span class="s1">&amp; source_vertex</span><span class="s3">, </span>
+			   <span class="s3">int</span><span class="s1">&amp; target_vertex</span><span class="s3">, </span>
+			   <span class="s1">vector&lt;</span><span class="s3">int</span><span class="s1">&gt;&amp; distances</span><span class="s3">,</span>
+			   <span class="s3">int</span><span class="s1">&amp; vertex_count</span><span class="s3">,</span>
+			   <span class="s3">bool</span><span class="s1">&amp; graph_is_splitted</span><span class="s3">,</span>
+			   <span class="s1">vector&lt;pair&lt;</span><span class="s3">long double, long double</span><span class="s1">&gt;&gt;&amp; vertex_coordinates) {</span>
+	<span class="s1">vector&lt;</span><span class="s3">int</span><span class="s1">&gt; path</span><span class="s3">;</span>
+	<span class="s3">int </span><span class="s1">v = target_vertex</span><span class="s3">;</span>
+	<span class="s3">if </span><span class="s1">(ancestors[v] == -</span><span class="s4">1</span><span class="s1">) {</span>
+		<span class="s3">if </span><span class="s1">(ancestors[v + vertex_count] == -</span><span class="s4">1</span><span class="s1">) {</span>
+			<span class="s1">printf(</span><span class="s2">&quot;There is no path to target_vertex = %d from the source_vertex = %d!</span><span class="s3">\n</span><span class="s2">&quot;</span><span class="s3">, </span><span class="s1">target_vertex</span><span class="s3">, </span><span class="s1">source_vertex)</span><span class="s3">;</span>
+			<span class="s3">return;</span>
+		<span class="s1">}</span>
+	<span class="s1">}</span>
+	<span class="s3">if </span><span class="s1">(graph_is_splitted </span><span class="s3">and </span><span class="s1">(distances[v] &gt;= distances[v + vertex_count])) {</span>
+		<span class="s1">v = v + vertex_count</span><span class="s3">;</span>
+	<span class="s1">}</span>
+	
+	<span class="s1">cout &lt;&lt; </span><span class="s2">&quot;Distance to target_vertex: &quot; </span><span class="s1">&lt;&lt; distances[v] &lt;&lt; endl</span><span class="s3">;</span>
+	<span class="s3">for </span><span class="s1">(</span><span class="s3">; </span><span class="s1">v != source_vertex</span><span class="s3">; </span><span class="s1">v = ancestors[v]) {</span>
+		<span class="s3">if </span><span class="s1">(v &gt; vertex_count) {</span>
+			<span class="s1">path.push_back(v - vertex_count)</span><span class="s3">;</span>
+		<span class="s1">}</span>
+		<span class="s3">else </span><span class="s1">{</span>
+			<span class="s1">path.push_back(v)</span><span class="s3">;</span>
+		<span class="s1">}</span>
+	<span class="s1">}</span>
+	<span class="s1">path.push_back(source_vertex)</span><span class="s3">;</span>
+	<span class="s1">reverse(path.begin()</span><span class="s3">, </span><span class="s1">path.end())</span><span class="s3">;</span>
+	<span class="s1">cout &lt;&lt; </span><span class="s2">&quot;Path from &quot; </span><span class="s1">&lt;&lt; source_vertex &lt;&lt; </span><span class="s2">&quot; to &quot; </span><span class="s1">&lt;&lt; target_vertex &lt;&lt; </span><span class="s2">&quot;:</span><span class="s3">\n</span><span class="s2">&quot;</span><span class="s3">;</span>
+	<span class="s1">ofstream fout</span><span class="s3">;</span>
+	<span class="s3">char </span><span class="s1">pathh[] = </span><span class="s2">&quot;path2.csv&quot;</span><span class="s3">;</span>
+	<span class="s1">fout.open(pathh)</span><span class="s3">;</span>
+	<span class="s1">fout &lt;&lt; setprecision(</span><span class="s4">9</span><span class="s1">) &lt;&lt; endl</span><span class="s3">;</span>
+	<span class="s3">for </span><span class="s1">(size_t i = </span><span class="s4">0</span><span class="s3">; </span><span class="s1">i &lt; path.size() - </span><span class="s4">1</span><span class="s3">; </span><span class="s1">++i) {</span>
+		<span class="s1">cout &lt;&lt; path[i] &lt;&lt; </span><span class="s2">'-'</span><span class="s3">;</span>
+		<span class="s1">fout &lt;&lt; vertex_coordinates[i + </span><span class="s4">1</span><span class="s1">].first &lt;&lt; </span><span class="s2">&quot;,&quot; </span><span class="s1">&lt;&lt; vertex_coordinates[i + </span><span class="s4">1</span><span class="s1">].second &lt;&lt; endl</span><span class="s3">;</span>
+		<span class="s3">if </span><span class="s1">(i != </span><span class="s4">0 </span><span class="s3">and </span><span class="s1">i % </span><span class="s4">14 </span><span class="s1">== </span><span class="s4">0</span><span class="s1">)</span>
+			<span class="s1">cout &lt;&lt; endl</span><span class="s3">;</span>
+	<span class="s1">}</span>
+	<span class="s1">cout &lt;&lt; path[path.size() - </span><span class="s4">1</span><span class="s1">] &lt;&lt; endl</span><span class="s3">;</span>
+	<span class="s1">fout &lt;&lt; vertex_coordinates[path.size()].first &lt;&lt; </span><span class="s2">&quot;,&quot; </span><span class="s1">&lt;&lt; vertex_coordinates[path.size() - </span><span class="s4">1</span><span class="s1">].second &lt;&lt; endl</span><span class="s3">;</span>
+	<span class="s1">fout.close()</span><span class="s3">;</span>
+<span class="s1">}</span>
+
+<span class="s3">double </span><span class="s1">Dijkstra(vector&lt;vector&lt;pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt;&gt;&gt;&amp; adjacency_list</span><span class="s3">,</span>
+				<span class="s1">vector&lt;</span><span class="s3">int</span><span class="s1">&gt;&amp; distances</span><span class="s3">, </span>
+				<span class="s1">vector&lt;</span><span class="s3">int</span><span class="s1">&gt;&amp; ancestors</span><span class="s3">, </span>
+				<span class="s3">int</span><span class="s1">&amp; source_vertex</span><span class="s3">, </span>
+				<span class="s3">int</span><span class="s1">&amp; target_vertex</span><span class="s3">,</span>
+				<span class="s3">int</span><span class="s1">&amp; vertex_count) {</span>
+	<span class="s1">clock_t start_time = clock()</span><span class="s3">;</span>
+	<span class="s1">clock_t end_time</span><span class="s3">;</span>
+	<span class="s1">priority_queue&lt;pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt;&gt; Queue</span><span class="s3">;</span>
+	<span class="s1">distances.assign(adjacency_list.size()</span><span class="s3">, </span><span class="s1">INF)</span><span class="s3">;</span>
+	<span class="s1">ancestors.assign(adjacency_list.size()</span><span class="s3">, </span><span class="s1">-</span><span class="s4">1</span><span class="s1">)</span><span class="s3">;</span>
+	<span class="s1">distances[source_vertex] = </span><span class="s4">0</span><span class="s3">;</span>
+	<span class="s1">Queue.push({ distances[source_vertex]</span><span class="s3">, </span><span class="s1">source_vertex })</span><span class="s3">;</span>
+	<span class="s3">while </span><span class="s1">(!Queue.empty()) {</span>
+		<span class="s1">pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt; u = Queue.top()</span><span class="s3">; </span><span class="s1">Queue.pop()</span><span class="s3">;</span>
+		<span class="s5">/*if (-u.first &gt; distances[u.second]) 
+            continue;*/</span>
+		<span class="s3">if </span><span class="s1">((u.second == target_vertex) </span><span class="s3">or </span><span class="s1">(u.second == target_vertex + vertex_count)) {</span>
+			<span class="s1">end_time = clock()</span><span class="s3">;</span>
+			<span class="s3">return </span><span class="s1">(end_time - start_time)</span><span class="s3">;</span>
+		<span class="s1">}</span>
+		<span class="s3">for </span><span class="s1">(pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt; arc : adjacency_list[u.second]) {</span>
+			<span class="s3">int </span><span class="s1">v = arc.first</span><span class="s3">;</span>
+			<span class="s3">int </span><span class="s1">alt = (distances[u.second] + arc.second)</span><span class="s3">;</span>
+			<span class="s3">if </span><span class="s1">(distances[v] &gt; alt) {</span>
+				<span class="s1">distances[v] = alt</span><span class="s3">;</span>
+				<span class="s1">Queue.push({ -alt</span><span class="s3">, </span><span class="s1">v })</span><span class="s3">;</span>
+				<span class="s1">ancestors[v] = u.second</span><span class="s3">;</span>
+			<span class="s1">}</span>
+		<span class="s1">}</span>
+	<span class="s1">}</span>
+	<span class="s1">end_time = clock()</span><span class="s3">;</span>
+	<span class="s3">return </span><span class="s1">(end_time - start_time)</span><span class="s3">;</span>
+<span class="s1">}</span>
+
+<span class="s3">double </span><span class="s1">BellmanFord(vector&lt;vector&lt;pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt;&gt;&gt;&amp; adjacency_list</span><span class="s3">,</span>
+				   <span class="s1">vector&lt;</span><span class="s3">int</span><span class="s1">&gt;&amp; distances</span><span class="s3">,</span>
+				   <span class="s1">vector&lt;</span><span class="s3">int</span><span class="s1">&gt;&amp; ancestors</span><span class="s3">,</span>
+				   <span class="s3">int</span><span class="s1">&amp; source_vertex</span><span class="s3">,</span>
+				   <span class="s3">int</span><span class="s1">&amp; target_vertex) {</span>
+	<span class="s1">clock_t start_time = clock()</span><span class="s3">;</span>
+	<span class="s1">distances.assign(adjacency_list.size()</span><span class="s3">, </span><span class="s1">INF)</span><span class="s3">;</span>
+	<span class="s1">ancestors.assign(adjacency_list.size()</span><span class="s3">, </span><span class="s1">-</span><span class="s4">1</span><span class="s1">)</span><span class="s3">;</span>
+	<span class="s1">distances[source_vertex] = </span><span class="s4">0</span><span class="s3">;</span>
+	<span class="s3">for </span><span class="s1">(</span><span class="s3">;;</span><span class="s1">) {</span>
+		<span class="s3">bool </span><span class="s1">flag = </span><span class="s3">false;</span>
+		<span class="s3">for </span><span class="s1">(</span><span class="s3">int </span><span class="s1">i = </span><span class="s4">1</span><span class="s3">; </span><span class="s1">i &lt; adjacency_list.size()</span><span class="s3">; </span><span class="s1">++i) {</span>
+			<span class="s3">for </span><span class="s1">(pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt; arc : adjacency_list[i]) {</span>
+				<span class="s3">int </span><span class="s1">from = i</span><span class="s3">;</span>
+				<span class="s3">int </span><span class="s1">to = arc.first</span><span class="s3">;</span>
+				<span class="s3">int </span><span class="s1">cost = arc.second</span><span class="s3">;</span>
+				<span class="s3">if </span><span class="s1">(distances[to] &gt; distances[from] + cost) {</span>
+					<span class="s1">distances[to] = distances[from] + cost</span><span class="s3">;</span>
+					<span class="s1">ancestors[to] = from</span><span class="s3">;</span>
+					<span class="s1">flag = </span><span class="s3">true;</span>
+				<span class="s1">}</span>
+			<span class="s1">}</span>
+		<span class="s1">}</span>
+		<span class="s3">if </span><span class="s1">(</span><span class="s3">not </span><span class="s1">flag)</span>
+			<span class="s3">break;</span>
+	<span class="s1">}</span>
+	<span class="s1">clock_t end_time = clock()</span><span class="s3">;</span>
+	<span class="s3">return </span><span class="s1">(</span><span class="s3">double</span><span class="s1">)(end_time - start_time)</span><span class="s3">;</span>
+<span class="s1">}</span>
+
+<span class="s3">long double </span><span class="s1">toRadians(</span><span class="s3">const long double</span><span class="s1">&amp; degree) {</span>
+	<span class="s5">// cmath library in C++</span>
+	<span class="s5">// defines the constant</span>
+	<span class="s5">// M_PI as the value of</span>
+	<span class="s5">// pi accurate to 1e-30</span>
+	<span class="s3">return </span><span class="s1">((</span><span class="s3">long double</span><span class="s1">)(M_PI/</span><span class="s4">180</span><span class="s1">) * degree)</span><span class="s3">;</span>
+<span class="s1">}</span>
+
+<span class="s3">int </span><span class="s1">heuristic(vector&lt;pair&lt;</span><span class="s3">long double, long double</span><span class="s1">&gt;&gt;&amp; vertex_coordinates</span><span class="s3">, int</span><span class="s1">&amp; vertex_1</span><span class="s3">, int</span><span class="s1">&amp; vertex_2) {</span>
+	<span class="s3">if </span><span class="s1">(vertex_1 &gt;= vertex_coordinates.size()) {</span>
+		<span class="s1">vertex_1 -= vertex_coordinates.size()</span><span class="s3">;</span>
+	<span class="s1">}</span>
+	<span class="s3">if </span><span class="s1">(vertex_2 &gt;= vertex_coordinates.size()) {</span>
+		<span class="s1">vertex_2 -= vertex_coordinates.size()</span><span class="s3">;</span>
+	<span class="s1">}</span>
+	<span class="s3">long double </span><span class="s1">latitude_1</span><span class="s3">; </span><span class="s5">//= vertex_coordinates[vertex_1].first; </span>
+	<span class="s3">long double </span><span class="s1">longitude_1</span><span class="s3">; </span><span class="s5">//= vertex_coordinates[vertex_1].second;</span>
+	<span class="s3">long double </span><span class="s1">latitude_2</span><span class="s3">; </span><span class="s5">//= vertex_coordinates[vertex_2].first;</span>
+	<span class="s3">long double </span><span class="s1">longitude_2</span><span class="s3">;</span><span class="s5">// = vertex_coordinates[vertex_2].second;</span>
+	<span class="s5">// Convert the latitudes</span>
+	<span class="s5">// and longitudes</span>
+	<span class="s5">// from degree to radians.</span>
+	<span class="s1">latitude_1 = toRadians(vertex_coordinates[vertex_1].first)</span><span class="s3">;</span>
+	<span class="s1">longitude_1 = toRadians(vertex_coordinates[vertex_1].second)</span><span class="s3">;</span>
+	<span class="s1">latitude_2 = toRadians(vertex_coordinates[vertex_2].first)</span><span class="s3">;</span>
+	<span class="s1">longitude_2 = toRadians(vertex_coordinates[vertex_2].second)</span><span class="s3">;</span>
+
+	<span class="s5">// Haversine Formula</span>
+	<span class="s3">long double </span><span class="s1">d_longitude = longitude_2 - longitude_1</span><span class="s3">;</span>
+	<span class="s3">long double </span><span class="s1">d_latitude = latitude_2 - latitude_1</span><span class="s3">;</span>
+
+	<span class="s3">long double </span><span class="s1">ans = pow(sin(d_latitude / </span><span class="s4">2</span><span class="s1">)</span><span class="s3">, </span><span class="s4">2</span><span class="s1">) + </span>
+		<span class="s1">cos(latitude_1) * cos(latitude_2) * pow(sin(d_longitude / </span><span class="s4">2</span><span class="s1">)</span><span class="s3">, </span><span class="s4">2</span><span class="s1">)</span><span class="s3">;</span>
+
+	<span class="s1">ans = </span><span class="s4">2 </span><span class="s1">* asin(sqrt(ans))</span><span class="s3">;</span>
+	<span class="s5">// Radius of Earth in</span>
+	<span class="s5">// Kilometers, R = 6371</span>
+	<span class="s5">// Use R = 3956 for miles</span>
+	<span class="s3">long double </span><span class="s1">R = </span><span class="s4">6371</span><span class="s3">;</span>
+
+	<span class="s5">// Calculate the result</span>
+	<span class="s1">ans = </span><span class="s4">1000 </span><span class="s1">* ans * R</span><span class="s3">;</span>
+
+	<span class="s3">return </span><span class="s1">(</span><span class="s3">int</span><span class="s1">)ans</span><span class="s3">;</span>
+<span class="s1">}</span>
+
+<span class="s3">double </span><span class="s1">Astar(vector&lt;vector&lt;pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt;&gt;&gt;&amp; adjacency_list</span><span class="s3">,</span>
+			 <span class="s1">vector&lt;</span><span class="s3">int</span><span class="s1">&gt;&amp; distances</span><span class="s3">,</span>
+			 <span class="s1">vector&lt;</span><span class="s3">int</span><span class="s1">&gt;&amp; ancestors</span><span class="s3">,</span>
+			 <span class="s3">int</span><span class="s1">&amp; source_vertex</span><span class="s3">,</span>
+			 <span class="s3">int</span><span class="s1">&amp; target_vertex</span><span class="s3">,</span>
+			 <span class="s3">int</span><span class="s1">&amp; vertex_count</span><span class="s3">,</span>
+			 <span class="s1">vector&lt;pair&lt;</span><span class="s3">long double, long double</span><span class="s1">&gt;&gt;&amp; vertex_coordinates) {</span>
+	<span class="s1">clock_t start_time = clock()</span><span class="s3">;</span>
+	<span class="s1">clock_t end_time</span><span class="s3">;</span>
+	<span class="s1">priority_queue&lt;pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt;&gt; Queue</span><span class="s3">;</span>
+	<span class="s1">distances.assign(adjacency_list.size()</span><span class="s3">, </span><span class="s1">INF)</span><span class="s3">;</span>
+	<span class="s1">ancestors.assign(adjacency_list.size()</span><span class="s3">, </span><span class="s1">-</span><span class="s4">1</span><span class="s1">)</span><span class="s3">;</span>
+	<span class="s1">distances[source_vertex] = </span><span class="s4">0</span><span class="s3">;</span>
+	<span class="s1">Queue.push({ distances[source_vertex]</span><span class="s3">, </span><span class="s1">source_vertex })</span><span class="s3">;</span>
+	<span class="s3">while </span><span class="s1">(!Queue.empty()) {</span>
+		<span class="s1">pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt; u = Queue.top()</span><span class="s3">; </span><span class="s1">Queue.pop()</span><span class="s3">;</span>
+		<span class="s5">/*if (-u.first &gt; distances[u.second]) 
+            continue;*/</span>
+		<span class="s3">if </span><span class="s1">((u.second == target_vertex) </span><span class="s3">or </span><span class="s1">(u.second == target_vertex + vertex_count)) {</span>
+			<span class="s1">end_time = clock()</span><span class="s3">;</span>
+			<span class="s3">return </span><span class="s1">(end_time - start_time)</span><span class="s3">;</span>
+		<span class="s1">}</span>
+		<span class="s3">for </span><span class="s1">(pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt; arc : adjacency_list[u.second]) {</span>
+			<span class="s3">int </span><span class="s1">v = arc.first</span><span class="s3">;</span>
+			<span class="s3">int </span><span class="s1">alt = (distances[u.second] + arc.second)</span><span class="s3">;</span>
+			<span class="s3">if </span><span class="s1">(distances[v] &gt; alt) {</span>
+				<span class="s1">distances[v] = alt</span><span class="s3">;</span>
+				<span class="s1">Queue.push({ -(alt + heuristic(vertex_coordinates</span><span class="s3">, </span><span class="s1">v</span><span class="s3">, </span><span class="s1">target_vertex))</span><span class="s3">, </span><span class="s1">v })</span><span class="s3">;</span>
+				<span class="s1">ancestors[v] = u.second</span><span class="s3">;</span>
+			<span class="s1">}</span>
+		<span class="s1">}</span>
+	<span class="s1">}</span>
+	<span class="s1">end_time = clock()</span><span class="s3">;</span>
+	<span class="s3">return </span><span class="s1">(end_time - start_time)</span><span class="s3">;</span>
+<span class="s1">}</span>
+
+<span class="s3">int </span><span class="s1">main() {</span>
+	<span class="s1">vector&lt;vector&lt;pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt;&gt;&gt; graph</span><span class="s3">;</span>
+	<span class="s1">vector&lt;tuple&lt;</span><span class="s3">int, int, int</span><span class="s1">&gt;&gt; banned_turns</span><span class="s3">;</span>
+	<span class="s1">vector&lt;pair&lt;</span><span class="s3">long double, long double</span><span class="s1">&gt;&gt; vertex_coordinates</span><span class="s3">;</span>
+	<span class="s3">bool </span><span class="s1">data_with_coordinates = </span><span class="s3">true;	</span><span class="s5">// &lt;-</span>
+	<span class="s3">bool </span><span class="s1">graph_is_splitted = </span><span class="s3">true;		</span><span class="s5">// &lt;-</span>
+	<span class="s3">bool </span><span class="s1">graph_is_not_splitted = </span><span class="s3">false;</span>
+	<span class="s3">int </span><span class="s1">vertex_count</span><span class="s3">, </span><span class="s1">arc_count</span><span class="s3">;</span>
+	<span class="s1">vector&lt;</span><span class="s3">int</span><span class="s1">&gt; distances</span><span class="s3">;</span>
+	<span class="s1">vector&lt;</span><span class="s3">int</span><span class="s1">&gt; ancestors</span><span class="s3">;</span>
+	<span class="s3">int </span><span class="s1">source_vertex = </span><span class="s4">1</span><span class="s3">; int </span><span class="s1">target_vertex = </span><span class="s4">4</span><span class="s3">;</span>
+	<span class="s3">double </span><span class="s1">runtime = readInputData(graph</span><span class="s3">, </span><span class="s1">banned_turns</span><span class="s3">, </span><span class="s1">vertex_count</span><span class="s3">, </span><span class="s1">arc_count</span><span class="s3">, </span><span class="s1">vertex_coordinates</span><span class="s3">, </span><span class="s1">data_with_coordinates)</span><span class="s3">;</span>
+	<span class="s1">cout &lt;&lt; </span><span class="s2">&quot;Runtime(Reading and initializing graph): &quot; </span><span class="s1">&lt;&lt; runtime / CLOCKS_PER_SEC &lt;&lt; </span><span class="s2">&quot;s</span><span class="s3">\n</span><span class="s2">&quot;</span><span class="s3">;</span>
+
+	<span class="s1">runtime = Dijkstra(graph</span><span class="s3">, </span><span class="s1">distances</span><span class="s3">, </span><span class="s1">ancestors</span><span class="s3">, </span><span class="s1">source_vertex</span><span class="s3">, </span><span class="s1">target_vertex</span><span class="s3">, </span><span class="s1">vertex_count)</span><span class="s3">;</span>
+	<span class="s1">cout &lt;&lt; </span><span class="s2">&quot;</span><span class="s3">\n</span><span class="s2">Runtime(Dijkstra's algorithm): &quot; </span><span class="s1">&lt;&lt; runtime / CLOCKS_PER_SEC &lt;&lt; </span><span class="s2">&quot;s </span><span class="s3">\n</span><span class="s2">&quot;</span><span class="s3">;</span>
+	<span class="s1">printPath(ancestors</span><span class="s3">, </span><span class="s1">source_vertex</span><span class="s3">, </span><span class="s1">target_vertex</span><span class="s3">, </span><span class="s1">distances</span><span class="s3">, </span><span class="s1">vertex_count</span><span class="s3">, </span><span class="s1">graph_is_not_splitted</span><span class="s3">, </span><span class="s1">vertex_coordinates)</span><span class="s3">;</span>
+	<span class="s1">cout &lt;&lt; </span><span class="s2">&quot;Heuristic between source and target: &quot; </span><span class="s1">&lt;&lt; heuristic(vertex_coordinates</span><span class="s3">, </span><span class="s1">source_vertex</span><span class="s3">, </span><span class="s1">target_vertex) &lt;&lt; endl</span><span class="s3">; </span><span class="s5">// &lt;-</span>
+
+	<span class="s1">runtime = BellmanFord(graph</span><span class="s3">, </span><span class="s1">distances</span><span class="s3">, </span><span class="s1">ancestors</span><span class="s3">, </span><span class="s1">source_vertex</span><span class="s3">, </span><span class="s1">target_vertex)</span><span class="s3">;</span>
+	<span class="s1">cout &lt;&lt; </span><span class="s2">&quot;</span><span class="s3">\n</span><span class="s2">Runtime(Bellman-Ford algorithm): &quot; </span><span class="s1">&lt;&lt; runtime / CLOCKS_PER_SEC &lt;&lt; </span><span class="s2">&quot;s </span><span class="s3">\n</span><span class="s2">&quot;</span><span class="s3">;</span>
+	<span class="s1">printPath(ancestors</span><span class="s3">, </span><span class="s1">source_vertex</span><span class="s3">, </span><span class="s1">target_vertex</span><span class="s3">, </span><span class="s1">distances</span><span class="s3">, </span><span class="s1">vertex_count</span><span class="s3">, </span><span class="s1">graph_is_not_splitted</span><span class="s3">, </span><span class="s1">vertex_coordinates)</span><span class="s3">;</span>
+
+	<span class="s1">runtime = Astar(graph</span><span class="s3">, </span><span class="s1">distances</span><span class="s3">, </span><span class="s1">ancestors</span><span class="s3">, </span><span class="s1">source_vertex</span><span class="s3">, </span><span class="s1">target_vertex</span><span class="s3">, </span><span class="s1">vertex_count</span><span class="s3">, </span><span class="s1">vertex_coordinates)</span><span class="s3">;</span>
+	<span class="s1">cout &lt;&lt; </span><span class="s2">&quot;</span><span class="s3">\n</span><span class="s2">Runtime(A* algorithm): &quot; </span><span class="s1">&lt;&lt; runtime / CLOCKS_PER_SEC &lt;&lt; </span><span class="s2">&quot;s </span><span class="s3">\n</span><span class="s2">&quot;</span><span class="s3">;</span>
+	<span class="s1">printPath(ancestors</span><span class="s3">, </span><span class="s1">source_vertex</span><span class="s3">, </span><span class="s1">target_vertex</span><span class="s3">, </span><span class="s1">distances</span><span class="s3">, </span><span class="s1">vertex_count</span><span class="s3">, </span><span class="s1">graph_is_not_splitted</span><span class="s3">, </span><span class="s1">vertex_coordinates)</span><span class="s3">;</span>
+
+	<span class="s1">vector&lt;vector&lt;pair&lt;</span><span class="s3">int, int</span><span class="s1">&gt;&gt;&gt; splitted_graph</span><span class="s3">, </span><span class="s1">copy_of_graph</span><span class="s3">;</span>
+	<span class="s1">copy_of_graph = graph</span><span class="s3">;</span>
+	<span class="s5">//runtime = generateTurnRestrictions(graph, banned_turns, vertex_count, arc_count);</span>
+	<span class="s5">//cout &lt;&lt; &quot;\nRuntime(Generating turn restriction): &quot; &lt;&lt; runtime / CLOCKS_PER_SEC &lt;&lt; &quot;s \n&quot;;</span>
+	<span class="s1">runtime = splitGraph(copy_of_graph</span><span class="s3">, </span><span class="s1">splitted_graph</span><span class="s3">, </span><span class="s1">banned_turns)</span><span class="s3">;</span>
+	<span class="s1">cout &lt;&lt; </span><span class="s2">&quot;</span><span class="s3">\n</span><span class="s2">Runtime(Splitting graph): &quot; </span><span class="s1">&lt;&lt; runtime / CLOCKS_PER_SEC &lt;&lt; </span><span class="s2">&quot;s </span><span class="s3">\n</span><span class="s2">&quot;</span><span class="s3">;</span>
+
+	<span class="s1">runtime = Dijkstra(splitted_graph</span><span class="s3">, </span><span class="s1">distances</span><span class="s3">, </span><span class="s1">ancestors</span><span class="s3">, </span><span class="s1">source_vertex</span><span class="s3">, </span><span class="s1">target_vertex</span><span class="s3">, </span><span class="s1">vertex_count)</span><span class="s3">;</span>
+	<span class="s1">cout &lt;&lt; </span><span class="s2">&quot;</span><span class="s3">\n</span><span class="s2">Runtime(Dijkstra's algorithm for graph with turn restrictions - splitted): &quot; </span><span class="s1">&lt;&lt; runtime / CLOCKS_PER_SEC &lt;&lt; </span><span class="s2">&quot;s </span><span class="s3">\n</span><span class="s2">&quot;</span><span class="s3">;</span>
+	<span class="s1">printPath(ancestors</span><span class="s3">, </span><span class="s1">source_vertex</span><span class="s3">, </span><span class="s1">target_vertex</span><span class="s3">, </span><span class="s1">distances</span><span class="s3">, </span><span class="s1">vertex_count</span><span class="s3">, </span><span class="s1">graph_is_splitted</span><span class="s3">, </span><span class="s1">vertex_coordinates)</span><span class="s3">;</span>
+
+	<span class="s1">runtime = BellmanFord(splitted_graph</span><span class="s3">, </span><span class="s1">distances</span><span class="s3">, </span><span class="s1">ancestors</span><span class="s3">, </span><span class="s1">source_vertex</span><span class="s3">, </span><span class="s1">target_vertex)</span><span class="s3">;</span>
+	<span class="s1">cout &lt;&lt; </span><span class="s2">&quot;</span><span class="s3">\n</span><span class="s2">Runtime(Bellman-Ford algorithm for graph with turn restrictions - splitted): &quot; </span><span class="s1">&lt;&lt; runtime / CLOCKS_PER_SEC &lt;&lt; </span><span class="s2">&quot;s </span><span class="s3">\n</span><span class="s2">&quot;</span><span class="s3">;</span>
+	<span class="s1">printPath(ancestors</span><span class="s3">, </span><span class="s1">source_vertex</span><span class="s3">, </span><span class="s1">target_vertex</span><span class="s3">, </span><span class="s1">distances</span><span class="s3">, </span><span class="s1">vertex_count</span><span class="s3">, </span><span class="s1">graph_is_splitted</span><span class="s3">, </span><span class="s1">vertex_coordinates)</span><span class="s3">;</span>
+	
+	<span class="s1">runtime = Astar(splitted_graph</span><span class="s3">, </span><span class="s1">distances</span><span class="s3">, </span><span class="s1">ancestors</span><span class="s3">, </span><span class="s1">source_vertex</span><span class="s3">, </span><span class="s1">target_vertex</span><span class="s3">, </span><span class="s1">vertex_count</span><span class="s3">, </span><span class="s1">vertex_coordinates)</span><span class="s3">;</span>
+	<span class="s1">cout &lt;&lt; </span><span class="s2">&quot;</span><span class="s3">\n</span><span class="s2">Runtime(A* algorithm for graph with turn restrictions - splitted): &quot; </span><span class="s1">&lt;&lt; runtime / CLOCKS_PER_SEC &lt;&lt; </span><span class="s2">&quot;s </span><span class="s3">\n</span><span class="s2">&quot;</span><span class="s3">;</span>
+	<span class="s1">printPath(ancestors</span><span class="s3">, </span><span class="s1">source_vertex</span><span class="s3">, </span><span class="s1">target_vertex</span><span class="s3">, </span><span class="s1">distances</span><span class="s3">, </span><span class="s1">vertex_count</span><span class="s3">, </span><span class="s1">graph_is_splitted</span><span class="s3">, </span><span class="s1">vertex_coordinates)</span><span class="s3">;</span>
+
+	<span class="s1">cout &lt;&lt; endl</span><span class="s3">;</span>
+	<span class="s1">system(</span><span class="s2">&quot;pause&quot;</span><span class="s1">)</span><span class="s3">;</span>
+	<span class="s3">return </span><span class="s4">0</span><span class="s3">;</span>
+<span class="s1">}</span></pre>
+</body>
+</html>

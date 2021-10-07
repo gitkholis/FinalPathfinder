@@ -1,0 +1,14 @@
+﻿  Routing.cpp
+C:\Users\ikhol\source\repos\RoutingMachine\RoutingMachine\Routing.cpp(56,20): warning C4018: <: несоответствие типов со знаком и без знака
+C:\Users\ikhol\source\repos\RoutingMachine\RoutingMachine\Routing.cpp(74,21): warning C4018: <: несоответствие типов со знаком и без знака
+C:\Users\ikhol\source\repos\RoutingMachine\RoutingMachine\Routing.cpp(86,21): warning C4018: <: несоответствие типов со знаком и без знака
+C:\Users\ikhol\source\repos\RoutingMachine\RoutingMachine\Routing.cpp(87,22): warning C4018: <: несоответствие типов со знаком и без знака
+C:\Users\ikhol\source\repos\RoutingMachine\RoutingMachine\Routing.cpp(166,23): warning C4018: >: несоответствие типов со знаком и без знака
+C:\Users\ikhol\source\repos\RoutingMachine\RoutingMachine\Routing.cpp(281,20): warning C4018: <: несоответствие типов со знаком и без знака
+C:\Users\ikhol\source\repos\RoutingMachine\RoutingMachine\Routing.cpp(348,22): warning C4018: <: несоответствие типов со знаком и без знака
+C:\Users\ikhol\source\repos\RoutingMachine\RoutingMachine\Routing.cpp(378,21): warning C4018: <: несоответствие типов со знаком и без знака
+C:\Users\ikhol\source\repos\RoutingMachine\RoutingMachine\Routing.cpp(402,15): warning C4018: >=: несоответствие типов со знаком и без знака
+C:\Users\ikhol\source\repos\RoutingMachine\RoutingMachine\Routing.cpp(405,15): warning C4018: >=: несоответствие типов со знаком и без знака
+C:\Users\ikhol\source\repos\RoutingMachine\RoutingMachine\Routing.cpp(520,22): warning C4018: <: несоответствие типов со знаком и без знака
+C:\Users\ikhol\source\repos\RoutingMachine\RoutingMachine\Routing.cpp(64): warning C4715: findArcsWeight: значение возвращается не при всех путях выполнения
+  RoutingMachine.vcxproj -> C:\Users\ikhol\source\repos\RoutingMachine\Debug\RoutingMachine.exe
